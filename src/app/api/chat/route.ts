@@ -5,6 +5,7 @@
 // Refer to Puppeteer docs here: https://pptr.dev/guides/what-is-puppeteer
 import { NextResponse } from "next/server";
 import { generateAnswer } from "@/app/utils/groqClient";
+import { urlPattern, scrapeUrl } from "@/app/utils/scraper";
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +13,27 @@ export async function POST(req: Request) {
 
     console.log("message recieved: ", message);
 
-    const response = await generateAnswer(message);
+    let scrapedContent = ""
+    const url = message.match(urlPattern);
+    if (url) {
+      console.log("url found: ", url);
+      const scaperResponse = await scrapeUrl(url);
+      console.log("Scraped content: ", scaperResponse)
+      scrapedContent = scaperResponse.content;  
+    }
+
+    const userQuery = message.replace(url ? url[0] : '', '').trim();
+
+    const prompt = `
+    Answer my question: "${userQuery}"
+    
+    Based on the following content:
+    <content>
+    ${scrapedContent}
+    </content>
+    `
+    console.log("Prompt: ", prompt)
+    const response = await generateAnswer(prompt);
 
     return NextResponse.json({ message: response });
   } catch (error) {

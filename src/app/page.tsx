@@ -100,9 +100,9 @@ export default function Home() {
       </div>
 
       {/* Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background/90 to-background/50 backdrop-blur-xl">
+      <div className="fixed bottom-0 left-0 right-0 ">
         <div className="max-w-2xl mx-auto p-4">
-          <div className="bg-zinc-800 rounded-xl relative flex items-center">
+          <div className="bg-zinc-800 border border-zinc-700 rounded-xl relative flex items-center">
             <input
               type="text"
               value={message}
@@ -115,7 +115,7 @@ export default function Home() {
               size="icon"
               onClick={handleSend}
               disabled={isLoading || !message.trim()}
-              className="absolute right-1 w-8 h-8 bg-zinc-600 rounded-xl"
+              className="absolute right-1 w-8 h-8 bg-zinc-600 rounded-xl "
             >
               <ArrowUp className="h-4 w-4" />
               <span className="sr-only">Send message</span>
