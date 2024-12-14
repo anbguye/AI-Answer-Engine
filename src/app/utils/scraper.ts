@@ -14,8 +14,7 @@ const MAX_CACHE_SIZE = 1024000;
 const CACHE_TTL = 60 * 60 * 24; // 1 day
 
 export const urlPattern =
-  /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
-
+  /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
 
 function cleanText(text: string) {
   return text.replace(/\s+/g, " ").replace(/\n+/g, " ").trim();
@@ -43,7 +42,7 @@ export async function scrapeUrl(url: string) {
     $("iframe").remove();
     //exctract useful text
     const title = $("title").text();
-    const metaDescription = $('meta[name="description"]').attr("content" || "");
+    const metaDescription = $('meta[name="description"]').attr("content") || "";
     const h1 = $("h1")
       .map((_, el) => $(el).text())
       .get()
@@ -133,18 +132,21 @@ export interface ScrapedContent {
   cachedAt?: number;
 }
 
-function isValidScrapedContent(data: any): data is ScrapedContent {
+function isValidScrapedContent(data: unknown): data is ScrapedContent {
+  const typedData = data as Partial<ScrapedContent>;
   return (
     typeof data === "object" &&
     data !== null &&
-    typeof data.url === "string" &&
-    typeof data.title === "string" &&
-    typeof data.headings === "object" &&
-    typeof data.headings.h1 === "string" &&
-    typeof data.headings.h2 === "string" &&
-    typeof data.metaDescription === "string" &&
-    typeof data.content === "string" &&
-    (data.error === null || typeof data.error === "string")
+    typeof typedData.url === "string" &&
+    typeof typedData.title === "string" &&
+    "headings" in data &&
+    typeof typedData.headings === "object" &&
+    typedData.headings !== null &&
+    typeof typedData.headings?.h1 === "string" &&
+    typeof typedData.headings?.h2 === "string" &&
+    typeof typedData.metaDescription === "string" &&
+    typeof typedData.content === "string" &&
+    (typedData.error === null || typeof typedData.error === "string")
   );
 }
 
@@ -164,9 +166,8 @@ async function getCachedContent(url: string): Promise<ScrapedContent | null> {
       return null;
     }
     logger.info(`Cache hit - Found cached content for: ${url}`);
-    // handle both string and object responses from redis
-    // eslint-disable-next-line @typescript/no-explicit-any
-    let parsed: any;
+
+    let parsed: unknown;
     if (typeof cached === "string") {
       parsed = JSON.parse(cached);
     } else {
