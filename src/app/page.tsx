@@ -12,34 +12,31 @@ type Message = {
 
 export default function Home() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState<Message[]  >([
     { role: "ai", content: "Hello! How can I help you today?" },
   ]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSend = async () => {
     if (!message.trim()) return;
-
+    
     const userMessage = { role: "user" as const, content: message };
-    setMessages(prev => [...prev, userMessage]);
+    const loadingMessage = { role: "ai" as const, content: "Thinking..." };
+    
+    setMessages(prev => [...prev, userMessage, loadingMessage]);
     setMessage("");
-    setIsLoading(true);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
 
       const data = await response.json();
-      setMessages(prev => [...prev, { role: "ai", content: data.message}]);
+      setMessages(prev => prev.slice(0, -1).concat({ role: "ai", content: data.message }));
     } catch (error) {
       console.error("Error:", error);
-    } finally {
-      setIsLoading(false);
+      setMessages(prev => prev.slice(0, -1).concat({ role: "ai", content: "Sorry, something went wrong." }));
     }
   };
 
@@ -80,22 +77,6 @@ export default function Home() {
               </div>
             </div>
           ))}
-          {isLoading && (
-            <div className="flex gap-3 my-4 text-sm">
-              <Avatar className="h-6 w-6 mt-1">
-                <div className="rounded-full bg-primary/20 text-primary/90 h-full w-full flex items-center justify-center text-xs font-medium">
-                  AI
-                </div>
-              </Avatar>
-              <div className="px-3 py-2 rounded-lg bg-muted">
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-foreground/50 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                  <div className="w-1.5 h-1.5 bg-foreground/50 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="w-1.5 h-1.5 bg-foreground/50 rounded-full animate-bounce"></div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -114,7 +95,7 @@ export default function Home() {
             <Button
               size="icon"
               onClick={handleSend}
-              disabled={isLoading || !message.trim()}
+              disabled={!message.trim()}
               className="absolute right-1 w-8 h-8 bg-zinc-600 rounded-xl "
             >
               <ArrowUp className="h-4 w-4" />
