@@ -18,7 +18,7 @@ export default function Home() {
 
   const handleSend = async () => {
     if (!message.trim()) return;
-    
+
     const userMessage = { role: "user" as const, content: message };
     const loadingMessage = { role: "ai" as const, content: "Thinking..." };
     
@@ -29,7 +29,7 @@ export default function Home() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, messages}),
       });
 
       const data = await response.json();

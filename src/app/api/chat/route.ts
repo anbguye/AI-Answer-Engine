@@ -11,16 +11,18 @@ export async function POST(req: Request) {
 
     console.log("message recieved: ", message);
 
-    let scrapedContent = ""
+    let scrapedContent = "";
     const url = message.match(urlPattern);
     if (url) {
       console.log("url found: ", url);
       const scaperResponse = await scrapeUrl(url);
-      console.log("Scraped content: ", scaperResponse)
-      scrapedContent = scaperResponse.content;  
+      console.log("Scraped content: ", scaperResponse);
+      if (scaperResponse) {
+        scrapedContent = scaperResponse.content;
+      }
     }
 
-    const userQuery = message.replace(url ? url[0] : '', '').trim();
+    const userQuery = message.replace(url ? url[0] : "", "").trim();
 
     const prompt = `
     Answer my question: "${userQuery}"
@@ -29,8 +31,10 @@ export async function POST(req: Request) {
     <content>
     ${scrapedContent}
     </content>
-    `
-    console.log("Prompt: ", prompt)
+
+    If no content is provided, just answer the question.
+    `;
+    console.log("Prompt: ", prompt);
     const response = await generateAnswer(prompt);
 
     return NextResponse.json({ message: response });
