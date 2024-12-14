@@ -7,9 +7,10 @@ import { urlPattern, scrapeUrl } from "@/app/utils/scraper";
 
 export async function POST(req: Request) {
   try {
-    const { message } = await req.json();
+    const { message, messages } = await req.json();
 
     console.log("message recieved: ", message);
+    console.log("messages recieved: ", messages);
 
     let scrapedContent = "";
     const url = message.match(urlPattern);
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
 
     const userQuery = message.replace(url ? url[0] : "", "").trim();
 
-    const prompt = `
+    const userPrompt = `
     Answer my question: "${userQuery}"
     
     Based on the following content:
@@ -32,17 +33,23 @@ export async function POST(req: Request) {
     ${scrapedContent}
     </content>
 
-    If no content is provided, just answer the question.
+    If content provided is blank, just answer the question and dont mention the content that wasnt provided.
     `;
-    console.log("Prompt: ", prompt);
-    const response = await generateAnswer(prompt);
+    const llmMessages = [
+      ...messages,
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ];
+
+    console.log("Prompt: ", llmMessages);
+    const response = await generateAnswer(llmMessages);
 
     return NextResponse.json({ message: response });
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Internal Server Error" });
   }
 }
+

@@ -14,7 +14,8 @@ const MAX_CACHE_SIZE = 1024000;
 const CACHE_TTL = 60 * 60 * 24; // 1 day
 
 export const urlPattern =
-  /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+  /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
+
 
 function cleanText(text: string) {
   return text.replace(/\s+/g, " ").replace(/\n+/g, " ").trim();
@@ -24,7 +25,7 @@ export async function scrapeUrl(url: string) {
   try {
     // Extract just the URL from the regex match if it's an array
     const actualUrl = Array.isArray(url) ? url[0] : url;
-    
+
     logger.info(`Scraping URL: ${actualUrl}`);
     const cachedContent = await getCachedContent(actualUrl);
     if (cachedContent) {

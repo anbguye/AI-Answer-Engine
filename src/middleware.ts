@@ -16,36 +16,28 @@ const ratelimit = new Ratelimit({
   redis: redis,
   limiter: Ratelimit.slidingWindow(10, "60 s"),
   analytics: true,
-})
+});
 
 export async function middleware(request: NextRequest) {
   try {
-  
-    const ip = request.headers.get("x-forwarded-for") ?? '127.0.0.1'
+    const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
 
-    const { success, limit, reset, remaining } = await ratelimit.limit(ip)
+    const { success, limit, reset, remaining } = await ratelimit.limit(ip);
 
     const response = success
       ? NextResponse.next()
-      : NextResponse.json(
-        { error: "Too many requests" },
-        { status: 429 }
-      )
+      : NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
-    response.headers.set("X-RateLimit-Limit", limit.toString())
-    response.headers.set("X-RateLimit-Remaining", remaining.toString())
-    response.headers.set("X-RateLimit-Reset", reset.toString())
+    response.headers.set("X-RateLimit-Limit", limit.toString());
+    response.headers.set("X-RateLimit-Remaining", remaining.toString());
+    response.headers.set("X-RateLimit-Reset", reset.toString());
 
-    return response
-
-
-
+    return response;
   } catch (error) {
     console.error("Error in middleware: ");
     return NextResponse.next();
   }
 }
-
 
 // Configure which paths the middleware runs on
 export const config = {

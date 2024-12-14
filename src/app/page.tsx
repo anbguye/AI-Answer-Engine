@@ -6,22 +6,25 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 type Message = {
-  role: "user" | "ai";
+  role: "user" | "assistant";
   content: string;
 };
 
 export default function Home() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]  >([
-    { role: "ai", content: "Hello! How can I help you today?" },
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "assistant", content: "Hello! How can I help you today?" },
   ]);
 
   const handleSend = async () => {
     if (!message.trim()) return;
 
     const userMessage = { role: "user" as const, content: message };
-    const loadingMessage = { role: "ai" as const, content: "Thinking..." };
-    
+    const loadingMessage = {
+      role: "assistant" as const,
+      content: "Thinking...",
+    };
+
     setMessages(prev => [...prev, userMessage, loadingMessage]);
     setMessage("");
 
@@ -29,14 +32,23 @@ export default function Home() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, messages}),
+        body: JSON.stringify({ message, messages }),
       });
 
       const data = await response.json();
-      setMessages(prev => prev.slice(0, -1).concat({ role: "ai", content: data.message }));
+      setMessages(prev =>
+        prev.slice(0, -1).concat({ role: "assistant", content: data.message })
+      );
     } catch (error) {
       console.error("Error:", error);
-      setMessages(prev => prev.slice(0, -1).concat({ role: "ai", content: "Sorry, something went wrong." }));
+      setMessages(prev =>
+        prev
+          .slice(0, -1)
+          .concat({
+            role: "assistant",
+            content: "Sorry, something went wrong.",
+          })
+      );
     }
   };
 
@@ -56,10 +68,10 @@ export default function Home() {
             <div
               key={index}
               className={`group flex gap-3 my-4 text-sm ${
-                msg.role === "ai" ? "justify-start" : "justify-end"
+                msg.role === "assistant" ? "justify-start" : "justify-end"
               }`}
             >
-              {msg.role === "ai" && (
+              {msg.role === "assistant" && (
                 <Avatar className="h-6 w-6 mt-1">
                   <div className="bg-gradient-to-br from-zinc-800 to-zinc-700 rounded-full bg-primary/20 text-primary/90 h-full w-full flex items-center justify-center text-xs font-medium">
                     AI
@@ -68,7 +80,7 @@ export default function Home() {
               )}
               <div
                 className={`px-3 py-2 rounded-xl max-w-[85%] ${
-                  msg.role === "ai"
+                  msg.role === "assistant"
                     ? "bg-gradient-to-br from-zinc-800 to-zinc-700"
                     : "bg-slate-100 text-black"
                 }`}

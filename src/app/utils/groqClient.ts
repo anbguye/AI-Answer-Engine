@@ -9,23 +9,25 @@ interface ChatMessage {
   content: string;
 }
 
-export async function generateAnswer(prompt: string) {
+export async function generateAnswer(chatMessages: ChatMessage[]) {
   const messages: ChatMessage[] = [
     {
       role: "system",
       content:
         "You are an academic expert, you always cite your sources and base your responses on the context that you have been provided.",
     },
-    { role: "user", content: prompt },
-  ] as const;
+    ...chatMessages,
+  ];
 
+  console.log("Messages: ", messages);
   console.log("Starting groq request");
+
   const response = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
     messages,
   });
 
-  console.log("Recieved response from groq");
+  // console.log("Recieved response from groq");
 
   return response.choices[0].message.content;
 }
