@@ -93,7 +93,7 @@ export default function Home() {
       </div>
 
       {/* Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 ">
+      <div className="fixed bottom-0 left-0 right-0 bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800">
         <div className="max-w-2xl mx-auto p-4">
           <div className="bg-zinc-800 border border-zinc-700 rounded-xl relative flex items-center">
             <input
